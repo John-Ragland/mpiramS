@@ -1,0 +1,34 @@
+8.6     % 0-7 skipjack - i7-3820  3.6 GHz
+8.6     % Set the value to be the approximate compute time for one frequency.
+8.6     % In single precision, hyperthreading can be used to great effect.
+8.6     % So with this i7-3820 or the i7-950 we will use the four real 
+8.8     % processors and the four additional logical processors.
+8.8
+8.8
+8.8
+9.1     % 8-15 kingfish - AMD FX-8350 4.0 GHz
+9.1
+9.1
+9.1
+9.1     
+9.1
+9.1
+9.1
+7.9     % 16-19 mako - AMD Phenom 965 3.4 GHz
+7.9
+7.9
+7.9
+8.6     % 20-25 swordfish - AMD 1090T 3.2 GHz; 6 procs
+8.6
+8.6
+8.6
+8.6
+8.6
+11.3     % 12-19 marlin - intel i7 950
+11.3
+11.3
+11.3
+11.3
+11.3
+11.3
+11.3
