@@ -11,7 +11,7 @@ SRCDIR = src
 
 ###########################################
 # Gnu g77/gfortran options (64 bit)
-FC = /opt/GCC/gcc-5/bin/gfortran
+FC = /usr/bin/gfortran
 
 #FFLAGS = -march=native -mtune=native -fopenmp -m64 -mfpmath=sse -I $(MODDIR) -Wall -finline-functions -ffast-math -fno-strength-reduce -falign-functions=2  -O3 -fomit-frame-pointer 
 #FFLAGS = -g -pg -march=native -fopenmp -m64 -mfpmath=sse -I $(MODDIR) -Wall 
