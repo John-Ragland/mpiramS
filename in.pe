@@ -1,6 +1,6 @@
                     !  input file to PE - CAUTION:  formatted input!
 75   2.0            !  center frequency (Hz), fc, and Q value; bandwidth=fc/Q
-10.0                !  time window width (s) - expected arrival pattern duration
+15.0                !  time window width (s) - expected arrival pattern duration
 1000.0              !  source depth (m) - N.B. Formatted, requires one decimal place!
 3000000.00000       !  receiver range (m)
 0.50                !  deltaz - an accuracy parameter (m)  (0.5 is liberal)
