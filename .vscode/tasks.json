@@ -4,6 +4,7 @@
         {
             "label": "compile",
             "command": "make",
+            "problemMatcher": []
         }
     ]
 
