@@ -21,11 +21,11 @@ real(kind=wp) :: cmin
 real(kind=wp),dimension(:),allocatable :: rp0
 
 real(kind=wp),dimension(:),allocatable :: zg1
-complex(kind=wp),dimension(:),allocatable :: psi1
-complex(kind=wp),dimension(:,:),allocatable :: psif
+complex(kind=wp),dimension(:,:),allocatable :: psi1
+complex(kind=wp),dimension(:,:,:),allocatable :: psif
 
 ! input parameters - c.f., file "in.pe"
-integer :: dzm, iflat, ihorz, ibot
+integer :: dzm, drm, iflat, ihorz, ibot
 real(kind=wp) :: fc,Q,T,dum
 real(kind=wp),dimension(:),allocatable :: zsrc,rmax
 character(len=20) :: name1,name2     ! sound speed and bathymetry filenames
@@ -38,17 +38,17 @@ integer :: nb,nzp,nrp,nrp0,n,nf1,nf
 real(kind=wp) :: bw, fs, Nsam, df, tmp
 real(kind=wp),dimension(:),allocatable :: frq
 
-integer ::  nzo,icount
+integer ::  nzo,nro,icount,rcount
 real(kind=wp) :: omega
 
 real(kind=wp) :: rate
 integer :: t1,t2,cr,cm
 
-integer :: ii,jj,iff,length
+integer :: ii,jj,kk,iff,length
 
 integer, parameter :: nunit=2
 complex(kind=wp), parameter :: j=cmplx(0.0_wp,1.0_wp)
-complex(kind=wp) :: scl
+complex(kind=wp),dimension(:,:),allocatable :: scl
 
 interface
   subroutine ram(zsrc,rg)
@@ -81,6 +81,7 @@ read (2,'(i1,1x,i1)') np,nss     ! np -# pade coefficients
                                  ! ns -# stability terms
 read (2,'(f7.1)') rs             ! stability range
 read (2,'(i2)') dzm              ! dzm - depth decimation
+read (2,'(i2)') drm              ! drm - range decimation
 read (2,'(a20)') name1           ! sound speed filename; "munk" will just use canonical
 name1=trim(name1) ! remove trailing blanks
 read (2,'(i1)') iflat            ! 0=no flat earth transform, 1=yes
@@ -317,6 +318,7 @@ zmax=maxval(zw)
 
 ! icount is number of depths in zg, psi
 icount=floor(zmax/deltaz-0.5_wp)+2
+rcount=floor(rmax(1)/deltar-0.5_wp)+2
 
 nzo=0
 do ii=1,icount,dzm
@@ -324,7 +326,13 @@ do ii=1,icount,dzm
 end do
 ! nzo is number of depths in psi1, psif, zg1
 
-allocate(psif(nzo,nf))
+nro=0
+do ii=1,rcount,drm
+   nro=nro+1 
+end do
+! nro is number of ranges in psi1, psif, rg1
+
+allocate(psif(nzo,nro,nf))
 
 call system_clock(count_rate=cr)
 call system_clock(count_max=cm)
@@ -335,7 +343,7 @@ print *,nf,' total frequencies'
 ! Meat and Potatoes
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 !$OMP PARALLEL PRIVATE (psi1,omega,scl,t1,t2,cr,rate) 
-allocate(psi1(nzo))
+allocate(psi1(nzo, nro))
 !$OMP DO SCHEDULE(STATIC,1)
   do iff=1,nf
     call system_clock(t1)
@@ -346,15 +354,14 @@ allocate(psi1(nzo))
     call ram(zsrc,rmax)
 
 ! The miracle of fortran95!
-    psi1=psi(1:icount:dzm,1)
-
+    psi1=psi(1:icount:dzm,1:rcount:drm)
     omega=2.0_wp*pi*frqq 
     ! 3-D
-    scl=exp(j*(omega/c0*rout(1) + pi/4.0_wp))/4.0_wp/pi
+    scl=reshape(exp(j*(omega/c0*rout + pi/4.0_wp))/4.0_wp/pi, shape=[1,size(rout)])
     ! 2-D
     ! k0=omega/c0
     !scl=j*exp(j*omega/c0*rout)/sqrt(8.0_wp*pi*k0)
-    psif(:,iff)=scl*psi1
+    psif(:,:,iff)=scl*psi1
 
     call system_clock(t2,cr)
     rate=real(cr)
@@ -380,7 +387,7 @@ allocate(psi1(nzo))
 ! Need to save:  psif(:,:), rout, c0, zg1(:), fs, wind(:), frq(:), Nsam, nf
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-inquire(iolength=length) real(psif(1,:))
+inquire(iolength=length) real(psif(1,1,:))
 length=2*length+length/nf  ! We need nf real and nf imaginary values and the depth.
 ! length is the record length, an important piece of information
 ! Write it out for handy reference:
@@ -392,7 +399,7 @@ close(nunit)
 open(nunit, access='direct',recl=length,file='psif.dat')
 
 ! Float the integers to real, otherwise there will be trouble.
-write(nunit,rec=1) Nsam,real(nf,wp),real(nzo,wp),rout,c0,cmin,fs,Q
+write(nunit,rec=1) Nsam,real(nf,wp),real(nzo,wp),real(nro,wp),rout,c0,cmin,fs,Q
 write(nunit,rec=2) frq     ! vector of size nf
 
 ! Remove the flat-earth transform (or most of it, anyways)
@@ -402,8 +409,12 @@ zg1=zg1/(1.0_wp+(1.0_wp/2.0_wp)*eps+(1.0_wp/3.0_wp)*eps*eps)
 deallocate(eps)
 
 do ii=1,nzo
- write(nunit,rec=ii+2) zg1(ii),((real(psif(ii,jj))),(aimag(psif(ii,jj))),jj=1,nf)
+  do kk=1,nro
+    write(nunit,rec=ii+2) zg1(ii),((real(psif(ii,kk,jj))),(aimag(psif(ii,kk,jj))),jj=1,nf)
+  end do
 end do
+
+print '(a,f2.0)','psif shape: ', size(psif)
 
 close(nunit)
 
