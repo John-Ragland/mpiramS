@@ -22,11 +22,11 @@ real(kind=wp),dimension(:),allocatable :: rp0
 
 real(kind=wp),dimension(:),allocatable :: zg1
 real(kind=wp),dimension(:,:),allocatable :: rpsif,ipsif,rpsiff,ipsiff
-complex(kind=wp),dimension(:),allocatable :: psi1
-complex(kind=wp),dimension(:,:),allocatable :: psif
+complex(kind=wp),dimension(:,:),allocatable :: psi1
+complex(kind=wp),dimension(:,:,:),allocatable :: psif
 
 ! input parameters - c.f., file "in.pe"
-integer :: dzm, iflat, ihorz, ibot
+integer :: dzm, drm, iflat, ihorz, ibot
 real(kind=wp) :: fc,Q,T,dum
 real(kind=wp),dimension(:),allocatable :: zsrc,rmax
 character(len=20) :: name1,name2     ! sound speed and bathymetry filenames
@@ -115,6 +115,7 @@ read (2,'(i1,1x,i1)') np,nss     ! np -# pade coefficients
                                  ! ns -# stability terms
 read (2,'(f7.1)') rs             ! stability range
 read (2,'(i2)') dzm              ! dzm - depth decimation
+read (2,'(i2)') drm              ! drm - range decimation
 read (2,'(a20)') name1           ! sound speed filename
 name1=trim(name1)        ! remove trailing blanks
 read (2,'(i1)') iflat            ! 0=no flat earth transform, 1=yes
@@ -498,11 +499,11 @@ do iff=istart,iend
     call ram(zsrc,rmax)
 
 ! The miracle of fortran95!
-    psi1=psi(1:icount:dzm,1)
+    psi1=psi(1:icount:dzm,1::drm)
 
     omega=2.0_wp*pi*frqq 
     ! 3-D
-    scl=exp(j*(omega/c0*rout(1) + pi/4.0_wp))/4.0_wp/pi
+    scl=exp(j*(omega/c0*rout + pi/4.0_wp))/4.0_wp/pi
     ! 2-D
     ! k0=omega/c0
     !scl=j*exp(j*omega/c0*rout)/sqrt(8.0_wp*pi*k0)
