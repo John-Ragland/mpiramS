@@ -22,8 +22,15 @@ FC = /usr/bin/gfortran
 #LDFLAGS = -fopenmp -march=native -mtune=native
 #LDFLAGS = -g -pg -fopenmp -march=native -mtune=native 
 
-FFLAGS = -Ofast -march=corei7-avx -fopenmp -m64 -I $(MODDIR) -Wall -ffast-math -fuse-linker-plugin
-LDFLAGS = -Ofast -fopenmp -march=corei7-avx -flto
+#############################################
+# These flags WORK
+#FFLAGS = -Ofast -march=corei7-avx -fopenmp -m64 -I $(MODDIR) -Wall -ffast-math -fuse-linker-plugin -g
+#LDFLAGS = -Ofast -fopenmp -march=corei7-avx -flto -g
+#############################################
+
+# DEBUG flags
+FFLAGS = -march=corei7-avx -fopenmp -m64 -I $(MODDIR) -Wall -ffast-math -g -O0
+LDFLAGS = -fopenmp -march=corei7-avx -g -O0
 
 #####################################################
 # The AMD compiler http://developer.amd.com/tools/open64/Pages/default.aspx
@@ -85,11 +92,12 @@ MOD    = 			\
 
 $(PROG) : $(MOD) $(OBJ) 
 	$(FC) -o $(PROG) $(OBJ) $(LDFLAGS)
+#	$(FC) $(PROG) $(OBJ) $(LDFLAGS)
 #	strip $(PROG)
 
 clean: 
 	rm -f obj/peramx_mpi.o
-	rm -f $(OBJ) $(MOD) 
+	rm -f $(OBJ) $(MOD) $(PROG)
 
 # First compile the modules - these are needed when code using them are compiled.
 $(MODDIR)/kinds.mod : $(SRCDIR)/kinds.f90
