@@ -23,14 +23,18 @@ FC = /usr/bin/gfortran
 #LDFLAGS = -g -pg -fopenmp -march=native -mtune=native 
 
 #############################################
-# These flags WORK
-#FFLAGS = -Ofast -march=corei7-avx -fopenmp -m64 -I $(MODDIR) -Wall -ffast-math -fuse-linker-plugin -g
-#LDFLAGS = -Ofast -fopenmp -march=corei7-avx -flto -g
+# Original Flags - use when not debugging
+#FFLAGS = -Ofast -march=x86-64 -fopenmp -m64 -I $(MODDIR) -Wall -ffast-math -fuse-linker-plugin
+#LDFLAGS = -Ofast -fopenmp -march=x86-64 -flto
 #############################################
 
+# Debug Flags 2
+FFLAGS = -march=x86-64 -fopenmp -m64 -I $(MODDIR) -Wall -ffast-math -fuse-linker-plugin -g -O0
+LDFLAGS = -fopenmp -march=x86-64 -flto -g -O0
+
 # DEBUG flags
-FFLAGS = -march=corei7-avx -fopenmp -m64 -I $(MODDIR) -Wall -ffast-math -g -O0
-LDFLAGS = -fopenmp -march=corei7-avx -g -O0
+#FFLAGS = -march=corei7-avx -fopenmp -m64 -I $(MODDIR) -Wall -ffast-math -g -O0
+#LDFLAGS = -fopenmp -march=corei7-avx -g -O0
 
 #####################################################
 # The AMD compiler http://developer.amd.com/tools/open64/Pages/default.aspx
