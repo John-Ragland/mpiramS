@@ -1,1 +1,6 @@
 doc/
+obj/*
+mod/*
+*.dat
+in.pe
+s_mpiram
